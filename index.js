@@ -3,7 +3,8 @@ import Connection from './database/db.js';
 import userRoutes from './routes/userRoutes.js';
 import postRoutes from './routes/postRoutes.js';  
 import { faker } from '@faker-js/faker';
-import cors from 'cors'
+import cors from 'cors';
+import cron from 'node-cron';
 
 const app = express();
 const PORT = process.env.PORT || 5010;
@@ -16,15 +17,15 @@ app.use(express.json());
 
 // Use the user routes
 app.use('/api', userRoutes);
-app.use('/api', postRoutes);  // <-- Use post routes
+app.use('/api', postRoutes);
 
-
+// Endpoint to check backend status
 app.get('/checkup', (req, res) => {
     console.log('GET /checkup endpoint was hit');
     res.status(200).send('Backend is running correctly');
 });
 
-// api for fetching the fake data
+// API for fetching the fake data
 app.get('/posts', (req, res) => {
     const { limit = 10, offset = 0 } = req.query;
     const limitNum = parseInt(limit, 10);
@@ -52,9 +53,15 @@ app.get('/posts', (req, res) => {
     res.status(200).json(paginatedData);
 });
 
-
+// Start the server
 app.listen(PORT, () => {
     console.log(`Server is running successfully on port ${PORT}`);
 });
 
+// Initialize the database connection
 Connection();
+
+// Schedule a cron job to run every 10 seconds
+cron.schedule('*/10 * * * * *', function() {
+    console.log('Cron job is running');
+});
